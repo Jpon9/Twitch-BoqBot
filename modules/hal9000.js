@@ -1,3 +1,5 @@
+var hal9000 = require('./hal9000.json');
+
 function str_contains(str, words) {
 	for (var word in words) {
 		if (str.search(words[word]) !== -1) {
@@ -7,46 +9,23 @@ function str_contains(str, words) {
 	return false;
 }
 
-var greetings = [
-	"hello", "hey", "howdy", "greetings",
-	"what's up", "how's it going", "hi"
-];
-
-var insults = [
-	"\\*\\*\\*", "fuck", "suck",
-	"hate", "terrible", "damn",
-	"dammit", "shit", "cunt",
-	"bitch", "loser"
-];
-
-var compliments = [
-	"awesome", "love", "great",
-	"fantastic", "amazing", "best",
-	"wonderful"
-];
+function getRandomElement(arr) {
+	return arr[Math.floor(Math.random()*arr.length)];
+}
 
 botHateList = ['soulprinter', 'tistergaming']
 
 module.exports = {
 	botMention: function(bot, channel_name, sender, text) {
-		// If user is not on the hate list
-		if (botHateList.indexOf(sender.toLowerCase()) === -1) {
-			if (str_contains(text, greetings)) {
-				bot.say(channel_name, "Howdy, " + sender + "!");
-			} else if (str_contains(text, insults)) {
-				bot.say(channel_name, "That's not very nice, " + sender + " :(");
-			} else if (str_contains(text, compliments)) {
-				bot.say(channel_name, "Aww, you're alright too, " + sender + " :D");
-			}
-		// If user is on the hate list
-		} else {
-			if (str_contains(text, greetings)) {
-				bot.say(channel_name, "I'm not talking to you, " + sender + ".");
-			} else if (str_contains(text, insults)) {
-				bot.say(channel_name, "I already hate you enough, " + sender + ", why are you making me hate you more?");
-			} else if (str_contains(text, compliments)) {
-				bot.say(channel_name, "That's nice but I still hate you, " + sender + ".");
-			}
+		var hateList = botHateList.indexOf(sender.toLowerCase()) !== -1 ? 'hatelist' : 'normal';
+		if (str_contains(text, hal9000.triggers.greetings1)) {
+			bot.say(channel_name, getRandomElement(hal9000.responses[hateList].greetings1).replace('{SENDER}', sender));
+		} else if (str_contains(text, hal9000.triggers.greetings2)) {
+			bot.say(channel_name, getRandomElement(hal9000.responses[hateList].greetings2).replace('{SENDER}', sender));
+		} else if (str_contains(text, hal9000.triggers.insults)) {
+			bot.say(channel_name, getRandomElement(hal9000.responses[hateList].insults).replace('{SENDER}', sender));
+		} else if (str_contains(text, hal9000.triggers.compliments)) {
+			bot.say(channel_name, getRandomElement(hal9000.responses[hateList].compliments).replace('{SENDER}', sender));
 		}
 	}
 };

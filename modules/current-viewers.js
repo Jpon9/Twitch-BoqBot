@@ -21,7 +21,7 @@ module.exports = {
 	},
 
 	// Adds a viewer to the current viewers list
-	addViewer: function(nick) {
+	addViewer: function(nick, db) {
 		// If the viewer isn't already in the list
 		if (module.exports.indexOfViewer(nick) === -1) {
 			// Add them to the current viewers list
@@ -30,10 +30,25 @@ module.exports = {
 				timestamp: Math.floor(new Date().getTime() / 1000)
 			});
 		}
+
+		// Add viewer to the list of total viewers
+		db.getViewers({usernameOnly: true}, function(viewers) {
+			// Keep track of user stats
+			console.log("current-viewers.js L-37: newUsersThisSession");
+			console.log(newUsersThisSession);
+			if (viewers.indexOf(nick) === -1 && newUsersThisSession.indexOf(nick) === -1) {
+				db.addViewer({
+					username: nick,
+					messages: [],
+					minutes_watched: 0,
+					donation_amount: 0
+				});
+			}
+		});
 	},
 
 	// Removes a viewer from the current viewers list
-	removeViewer: function(nick) {
+	removeViewer: function(nick, db) {
 		var index = module.exports.indexOfViewer(nick);
 
 		if (index !== -1) {
@@ -53,18 +68,18 @@ module.exports = {
 		// Listen for the list of names you get when you join
 		bot.addListener('names', function(channel, nicks) {
 			for (var nick in nicks) {
-				module.exports.addViewer(nick);
+				module.exports.addViewer(nick, db);
 			}
 		});
 
 		// Listen for joins
 		bot.addListener('join' + settings.channel, function(nick, message) {
-			module.exports.addViewer(nick);
+			module.exports.addViewer(nick, db);
 		});
 
 		// Listen for parts
 		bot.addListener('part' + settings.channel, function(nick, message) {
-			module.exports.removeViewer(nick);
+			module.exports.removeViewer(nick, db);
 		});
 	}
 }

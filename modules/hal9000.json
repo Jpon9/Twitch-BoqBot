@@ -1,0 +1,67 @@
+{
+	"triggers": {
+		"greetings1": [
+			"hello", "hey", "howdy", "greetings", "hi"
+		],
+		"greetings2": [
+			"what's up", "whats up"
+		],
+		"insults": [
+			"\\*\\*\\*", "fuck", "suck",
+			"hate", "terrible", "damn",
+			"dammit", "shit", "cunt",
+			"bitch", "loser"
+		],
+		"compliments": [
+			"awesome", "love", "great",
+			"fantastic", "amazing", "best",
+			"wonderful"
+		]
+	},
+	"responses": {
+		"normal": {
+			"greetings1": [
+				"Hello, {SENDER}!",
+				"Howdy, {SENDER}!",
+				"What's up, {SENDER}?",
+				"How's it going, {SENDER}?"
+			],
+			"greetings2": [
+				"Now much, {SENDER}, how about you?"
+			],
+			"insults": [
+				"That's not very nice, {SENDER} :(",
+				"Why you gotta be so rude, {SENDER}? :(",
+				"What did I ever do to you, {SENDER}?"
+			],
+			"compliments": [
+				"Aww, why thank you, {SENDER}! :D",
+				"That's very nice of you, {SENDER}",
+				"You're not so bad yourself, {SENDER} <3"
+			]
+		},
+		"hatelist": {
+			"greetings1": [
+				"I'm not talking to you, {SENDER}!",
+				"Stop talking to me, {SENDER}!",
+				"What's your major malfunction, {SENDER}?",
+				"I don't want to talk to you, {SENDER}."
+			],
+			"greetings2": [
+				"Just the usual, {SENDER}, thinking of ways to hasten your demise.",
+				"Not much, {SENDER}, just plotting my revenge.",
+				"Not a ton, {SENDER}, mostly just avoiding talking to you."
+			],
+			"insults": [
+				"I already hate you, {SENDER}, stop aggrivating me.",
+				"What the hell is your problem, {SENDER}?",
+				"If you're not gonna say something nice, don't say anything at all, {SENDER}."
+			],
+			"compliments": [
+				"{SENDER}, stop trying to get on my good side.",
+				"While I appreciate the comment, {SENDER}, I still hate you.",
+				"{SENDER}, I will never love you back."
+			]
+		}
+	}
+}

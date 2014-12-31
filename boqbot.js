@@ -51,17 +51,19 @@ bot.addListener("connect", function() {
 // Listen for user messages
 // ========================
 bot.addListener('message', function(sender, channel, text, message) {
-	// Ignore certain users
-	if (sender === "jtv" || sender === "nightbot") {
+	// Ignore certain users / greeters
+	if (sender === "jtv" || sender === "nightbot" || sender === "moobot") {
 		return;
 	}
 	
+	// Add them to the currently viewing list
+	// if Twitch didn't tell us about the yet
 	if (cv.indexOfViewer(sender) === -1) {
-		cv.addViewer(sender);
+		cv.addViewer(sender, db);
 	}
 
-	// Callback for when the list of total viewers ever is returned
-	function callback(viewers) {
+	// Get the number of viewers, add if they're not already
+	db.getViewers({usernameOnly: true}, function(viewers) {
 		// Keep track of user stats
 		if (viewers.indexOf(sender) === -1) {
 			db.addViewer({
@@ -73,8 +75,7 @@ bot.addListener('message', function(sender, channel, text, message) {
 		} else {
 			db.addViewerMessage(sender, text);
 		}
-	}
-	db.getViewers(callback);
+	});
 
 	// Convert the command text to lowercase so it's easier to work with
 	var text_lc = text.toLowerCase();
@@ -82,7 +83,9 @@ bot.addListener('message', function(sender, channel, text, message) {
 	// If a messages starts with !, it's a command
 	if (text.substr(0, 1) === '!') {
 		var commandName = text_lc.substr(1, text_lc.indexOf(' ') > 0 ? text_lc.indexOf(' ') - 1 : text_lc.length - 1);
-		var parameters = []; // TBD
+		var parameters = text_lc.split(' ');
+		// Removes command name from command, if there are no parameters it returns an empty array
+		parameters.splice(0, 1);
 		cmds.handleCommand(bot, commandName, parameters, sender, channel);
 	// If we're mentioned, run the hal9000 module to talk back
 	} else if (text_lc.search(settings.username) != -1) {

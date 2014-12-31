@@ -35,6 +35,7 @@ module.exports = {
 	},
 
 	addViewer: function(viewerData) {
+		// TODO/NOTE: Get viewers, check if the username is in them, then execute this
 		var messages = [];
 		
 		for (var message in viewerData.messages) {
@@ -62,11 +63,18 @@ module.exports = {
 		});
 	},
 
-	getViewers: function(callback) {
+	getViewers: function(opts, callback) {
 		var allViewers = [];
+		var options = {
+			usernameOnly: opts.usernameOnly || false
+		};
 		Viewer.find({}, function(err, viewers) {
 			for (var viewer in viewers) {
-				allViewers.push(viewers[viewer].username);
+				if (options.usernameOnly) {
+					allViewers.push(viewers[viewer].username);
+				} else {
+					allViewers.push(viewers[viewer]);
+				}
 			}
 			callback(allViewers);
 		});
@@ -119,5 +127,31 @@ module.exports = {
 			}
 			callback(sessionMinutes + v.minutes_watched);
 		});
-	}
+	},
+
+	addViewerDonation: function(viewer, donation) {
+		Viewer.findOne({username: viewer}, function(err, v) {
+			if (err) {
+				console.error('Error getting ' + viewer + '\'s data');
+				console.error(err);
+			}
+			v.donation_amount += parseFloat(donation);
+			v.save(function(err) {
+				if (err) {
+					console.error('Error adding donation to ' + viewer);
+					console.error(err);
+				}
+			});
+		});
+	},
+
+	getViewerDonations: function(viewer, callback) {
+		Viewer.findOne({username: viewer}, function(err, v) {
+			if (err || v === null) {
+				console.error('Error getting ' + viewer + '\'s data');
+				console.error(err);
+			}
+			callback(v.donation_amount);
+		});
+	},
 }
