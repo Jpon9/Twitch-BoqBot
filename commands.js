@@ -42,22 +42,23 @@ module.exports = {
 				}
 				break;
 			/*	======= DEBUG COMMAND =======
-			 * !myminutes returns the number of minutes a user has ever watched the stream
+			 * !mytime returns the time a user has ever watched the stream
 			 */
-			case 'myminutes':
-				db.getViewerMinutes(sender, function(minutes) {
+			case 'mytime':
+				db.getViewerSeconds(sender, function(seconds) {
+					seconds += (new Date().getTime() / 1000 - cv.timeLastUpdated);
 					bot.say(channel, sender + ": You've watched " +
-						channel_name + " sit at his computer for " + minutes + " minutes in total.");
+						channel_name + " sit at his computer for " + format.seconds(seconds) + " in total.");
 				});
 				break;
 			/*	======= DEBUG COMMAND =======
-			 * !mysessionminutes returns the number of minutes the user has watched that session
+			 * !mysessiontime returns the number of time the user has watched that session
 			 */
-			case 'mysessionminutes':
+			case 'mysessiontime':
 				for (var v in cv.currentViewers) {
 					if (cv.currentViewers[v].username === sender) {
-						var minutesToday = Math.floor((Math.floor(new Date().getTime() / 1000) - cv.currentViewers[v].timestamp) / 60);
-						bot.say(channel, sender + ": You've been watching for " + minutesToday + " minutes this session.");
+						var secondsToday = Math.floor(Math.floor(new Date().getTime() / 1000) - cv.currentViewers[v].timestamp);
+						bot.say(channel, sender + ": You've been watching for " + format.seconds(secondsToday) + " this session.");
 						break;
 					}
 				}

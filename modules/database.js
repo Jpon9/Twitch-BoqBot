@@ -5,6 +5,7 @@ var ChatMessage = undefined;
 var Viewer = undefined;
 
 module.exports = {
+	// Connects to the database
 	connect: function(hostname, databaseName) {
 		mongoose.connect("mongodb://" + hostname + "/" + databaseName);
 
@@ -23,9 +24,9 @@ module.exports = {
 			});
 
 			var ViewerSchema = new Schema({
-				username: {type: String, lowercase: true},
+				username: {type: String, lowercase: true, unique: true},
 				messages: {type: [ChatMessageSchema] },
-				minutes_watched: {type: Number},
+				seconds_watched: {type: Number},
 				donation_amount: {type: Number}
 			});
 
@@ -34,8 +35,28 @@ module.exports = {
 		});
 	},
 
+	// Returns the viewer's object from MongoDB
+	getViewerData: function(viewer, callback) {
+		Viewer.findOne({username: viewer}, function(err, v) {
+			if (err) {
+				console.error('Error getting ' + viewer + '\'s data');
+				console.error(err);
+				return;
+			} else if (v === null) {
+				// If the user isn't found, return a default object
+				v = {
+					username: viewer,
+					messages: [],
+					seconds_watched: 0,
+					donation_amount: 0
+				};
+			}
+			callback(v);
+		});
+	},
+
+	// Adds a viewer to the MongoDB value
 	addViewer: function(viewerData) {
-		// TODO/NOTE: Get viewers, check if the username is in them, then execute this
 		var messages = [];
 		
 		for (var message in viewerData.messages) {
@@ -49,12 +70,13 @@ module.exports = {
 		var viewer = new Viewer({
 			username: viewerData.username,
 			messages: messages,
-			minutes_watched: viewerData.minutes_watched,
+			seconds_watched: viewerData.seconds_watched,
 			donation_amount: viewerData.donation_amount
 		});
 
 		viewer.save(function (err) {
 			if (err) {
+				if (err.code === 11000) { return; } // Duplicate index, this is intentional
 				console.error('Error adding user to MongoDB!');
 				console.error(err);
 			} else {
@@ -63,6 +85,12 @@ module.exports = {
 		});
 	},
 
+	// Alias for addViewer
+	addViewerIfNotExists: function(viewerData) {
+		module.exports.addViewer(viewerData);
+	},
+
+	// Returns all the viewers, string username only if option is set
 	getViewers: function(opts, callback) {
 		var allViewers = [];
 		var options = {
@@ -80,6 +108,7 @@ module.exports = {
 		});
 	},
 
+	// Adds a viewer message to the viewer's messages array
 	addViewerMessage: function(viewer, message) {
 		var query = {
 			username: viewer
@@ -100,41 +129,36 @@ module.exports = {
 		});
 	},
 
-	addViewerMinutes: function(viewer, minutes) {
-		Viewer.findOne({username: viewer}, function(err, v) {
-			if (err) {
-				console.error('Error getting ' + viewer + '\'s data');
-				console.error(err);
-			}
-			v.minutes_watched += minutes;
+	// Calls getViewerData and adds new seconds
+	addViewerSeconds: function(viewer, seconds) {
+		module.exports.getViewerData(viewer, function(v) {
+			v.seconds_watched += seconds;
 			v.save(function(err) {
 				if (err) {
-					console.error('Error adding minutes to ' + viewer);
+					console.error('Error adding seconds to ' + viewer);
 					console.error(err);
 				}
 			});
 		});
 	},
 
-	getViewerMinutes: function(viewer, callback) {
-		Viewer.findOne({username: viewer}, function(err, v) {
-			var sessionMinutes = 0;
+	// Calls getViewerData and returns seconds_watched value
+	getViewerSeconds: function(viewer, callback) {
+		module.exports.getViewerData(viewer, function(v) {
+			var sessionSeconds = 0;
 			for (var i in cv.currentViewers) {
 				if (cv.currentViewers[i].username === viewer) {
-					sessionMinutes = Math.floor((Math.floor(new Date().getTime() / 1000) - cv.currentViewers[i].timestamp) / 60);
+					sessionSeconds = Math.floor(new Date().getTime() / 1000) - cv.currentViewers[i].timestamp;
 					break;
 				}
 			}
-			callback(sessionMinutes + v.minutes_watched);
+			callback(v.seconds_watched + sessionSeconds);
 		});
 	},
 
+	// Calls getViewerData and adds to donation_amount value
 	addViewerDonation: function(viewer, donation) {
-		Viewer.findOne({username: viewer}, function(err, v) {
-			if (err) {
-				console.error('Error getting ' + viewer + '\'s data');
-				console.error(err);
-			}
+		module.exports.getViewerData(viewer, function(v) {
 			v.donation_amount += parseFloat(donation);
 			v.save(function(err) {
 				if (err) {
@@ -145,13 +169,10 @@ module.exports = {
 		});
 	},
 
+	// Calls getViewerData and returns the donation_amount value
 	getViewerDonations: function(viewer, callback) {
-		Viewer.findOne({username: viewer}, function(err, v) {
-			if (err || v === null) {
-				console.error('Error getting ' + viewer + '\'s data');
-				console.error(err);
-			}
+		module.exports.getViewerData(viewer, function(v) {
 			callback(v.donation_amount);
 		});
-	},
+	}
 }

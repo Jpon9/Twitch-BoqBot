@@ -1,7 +1,5 @@
 module.exports = {
-	dateDiff: function(dateToDiff) {
-	    var seconds = (new Date().getTime() / 1000) - dateToDiff;
-
+	seconds: function(seconds) {
 		var results = [];
 
 		var oneMinute = 60;
@@ -32,7 +30,17 @@ module.exports = {
 		seconds = Math.floor(seconds);
 		results.push(seconds + " second" + (seconds !== 1 ? "s" : ""));
 
+		if (results.length > 2) {
+			var popped = results.pop();
+			popped = "and " + popped;
+			results.push(popped);
+		}
+
 		return results.join(", ");
+	},
+
+	dateDiff: function(dateToDiff) {
+		module.exports.seconds(Math.abs((new Date().getTime() / 1000) - dateToDiff));
 	},
 
 	number: function(num, decimals) {

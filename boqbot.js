@@ -42,8 +42,8 @@ bot.addListener("connect", function() {
 	console.log("Connected to the channel.");
 	bot.say(settings.channel, "/color " + settings.chatname_color);
 	setTimeout(function() {
-		//console.log("Sending welcome message...");
-		//bot.say(settings.channel, "BoqBot is ALIVE!  I am a bot coded by Jpon9 to help facilitate boq_TV's stream chat.  You can find my code on GitHub at imnotamodsoicantpostlinksyetdotcom.");
+		console.log("Sending welcome message...");
+		bot.say(settings.channel, "BoqBot is ALIVE!  I am a bot coded by http://twitter.com/Jpon9/ to help facilitate boq_TV's stream chat.  You can find my code on GitHub at http://github.com/Jpon9/Twitch-BoqBot/.");
 	}, 2500);
 });
 
@@ -69,7 +69,7 @@ bot.addListener('message', function(sender, channel, text, message) {
 			db.addViewer({
 				username: sender,
 				messages: [text],
-				minutes_watched: 0,
+				seconds_watched: 0,
 				donation_amount: 0
 			});
 		} else {

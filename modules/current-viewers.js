@@ -1,15 +1,16 @@
 /*	The Current Viewers module
  *
  *	This module assists in keeping track of which viewers are currently
- *	viewing the stream and tracks their minutes in the connected MongoDB
+ *	viewing the stream and tracks their seconds in the connected MongoDB
  */
 
 module.exports = {
 	// Holds all currently viewing individuals as,
-	// This is checked to update minutes_watched values.
+	// This is checked to update seconds_watched values.
 	// Objects in this array hold a join timestamp and nick
 	currentViewers: [],
-	
+	timeLastUpdated: Math.floor(new Date().getTime() / 1000),
+
 	// Returns the index of the viewer based on his/her string name
 	indexOfViewer: function(viewer) {
 		for (var i in module.exports.currentViewers) {
@@ -31,19 +32,11 @@ module.exports = {
 			});
 		}
 
-		// Add viewer to the list of total viewers
-		db.getViewers({usernameOnly: true}, function(viewers) {
-			// Keep track of user stats
-			console.log("current-viewers.js L-37: newUsersThisSession");
-			console.log(newUsersThisSession);
-			if (viewers.indexOf(nick) === -1 && newUsersThisSession.indexOf(nick) === -1) {
-				db.addViewer({
-					username: nick,
-					messages: [],
-					minutes_watched: 0,
-					donation_amount: 0
-				});
-			}
+		db.addViewerIfNotExists({
+			username: nick,
+			messages: [],
+			seconds_watched: 0,
+			donation_amount: 0
 		});
 	},
 
@@ -58,9 +51,9 @@ module.exports = {
 			// Remove parted viewer from the current viewers
 			module.exports.currentViewers.splice(index, 1);
 
-			// Add the delta minutes to the user's minutes.
-			var minutes = Math.floor((Math.floor(new Date().getTime() / 1000) - viewer.timestamp) / 60);
-			db.addViewerMinutes(viewer.username, minutes);
+			// Add the delta seconds to the user's seconds.
+			var seconds = Math.floor(Math.floor(new Date().getTime() / 1000) - viewer.timestamp);
+			db.addViewerSeconds(viewer.username, seconds);
 		}
 	},
 
@@ -72,14 +65,39 @@ module.exports = {
 			}
 		});
 
-		// Listen for joins
+		// Listen for joins, add viewer to currentViewers and database if needed
 		bot.addListener('join' + settings.channel, function(nick, message) {
 			module.exports.addViewer(nick, db);
 		});
 
-		// Listen for parts
+		// Listen for parts, remove parted viewer from currentViewers
 		bot.addListener('part' + settings.channel, function(nick, message) {
 			module.exports.removeViewer(nick, db);
+		});
+
+		// Adds
+		bot.addListener('ping', function(server) {
+			var now = Math.floor(new Date().getTime() / 1000);
+			for (var v in module.exports.currentViewers) {
+				var secondsAdded = 0;
+				// Time between pings
+				if (module.exports.currentViewers[v].timestamp < module.exports.timeLastUpdated) {
+					secondsAdded = Math.floor(now - module.exports.timeLastUpdated);
+					db.addViewerSeconds(
+						module.exports.currentViewers[v].username,
+						Math.floor(now - module.exports.timeLastUpdated)
+					);
+				// Time between when the user joined and now
+				} else {
+					secondsAdded = Math.floor(now - module.exports.currentViewers[v].timestamp);
+					db.addViewerSeconds(
+						module.exports.currentViewers[v].username,
+						Math.floor(now - module.exports.currentViewers[v].timestamp)
+					);
+				}
+				console.log("Added " + secondsAdded + " seconds to " + module.exports.currentViewers[v].username);
+			}
+			module.exports.timeLastUpdated = now;
 		});
 	}
 }
