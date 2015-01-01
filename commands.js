@@ -46,7 +46,7 @@ module.exports = {
 			 */
 			case 'mytime':
 				db.getViewerSeconds(sender, function(seconds) {
-					seconds += (new Date().getTime() / 1000 - cv.timeLastUpdated);
+					seconds += new Date().getTime() / 1000 - cv.timeLastUpdated;
 					bot.say(channel, sender + ": You've watched " +
 						channel_name + " sit at his computer for " + format.seconds(seconds) + " in total.");
 				});
@@ -57,7 +57,7 @@ module.exports = {
 			case 'mysessiontime':
 				for (var v in cv.currentViewers) {
 					if (cv.currentViewers[v].username === sender) {
-						var secondsToday = Math.floor(Math.floor(new Date().getTime() / 1000) - cv.currentViewers[v].timestamp);
+						var secondsToday = Math.floor(new Date().getTime() / 1000) - cv.currentViewers[v].timestamp;
 						bot.say(channel, sender + ": You've been watching for " + format.seconds(secondsToday) + " this session.");
 						break;
 					}

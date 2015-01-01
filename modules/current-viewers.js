@@ -82,17 +82,17 @@ module.exports = {
 				var secondsAdded = 0;
 				// Time between pings
 				if (module.exports.currentViewers[v].timestamp < module.exports.timeLastUpdated) {
-					secondsAdded = Math.floor(now - module.exports.timeLastUpdated);
+					secondsAdded = now - module.exports.timeLastUpdated;
 					db.addViewerSeconds(
 						module.exports.currentViewers[v].username,
-						Math.floor(now - module.exports.timeLastUpdated)
+						now - module.exports.timeLastUpdated
 					);
 				// Time between when the user joined and now
 				} else {
-					secondsAdded = Math.floor(now - module.exports.currentViewers[v].timestamp);
+					secondsAdded = now - module.exports.currentViewers[v].timestamp;
 					db.addViewerSeconds(
 						module.exports.currentViewers[v].username,
-						Math.floor(now - module.exports.currentViewers[v].timestamp)
+						now - module.exports.currentViewers[v].timestamp
 					);
 				}
 				console.log("Added " + secondsAdded + " seconds to " + module.exports.currentViewers[v].username);
