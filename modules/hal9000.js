@@ -2,7 +2,7 @@ var hal9000 = require('./hal9000.json');
 
 function str_contains(str, words) {
 	for (var word in words) {
-		if (str.search(' ' + words[word] + ' ') !== -1) {
+		if (str.search(words[word]) !== -1) {
 			return true;
 		}
 	}

@@ -8,7 +8,7 @@ This bot aims to facilitate the chat and perform tasks for boq and his moderator
 
 ## Features
 
-* Tracks viewers and the amount of time they spend watching. (!viewers, !viewerlist)
+* Tracks viewers and the amount of time they spend watching. (!viewers, !viewerlist debug commands)
 * Records chat messages.
 * Tracks donations. (!donation)
 * Determine the amount of time a streamer has been streaming. (!uptime)
@@ -23,3 +23,22 @@ This bot aims to facilitate the chat and perform tasks for boq and his moderator
 * Can create strawpolls, provide a link to the strawpoll, and periodically update chat with results.
 * Host a channel for a specified amount of time.
 * Check if Nightbot is in chat, force it to join if it's not.
+
+## Dependencies
+
+MongoDB
+
+    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
+    echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/mongodb.list
+    sudo apt-get update
+    sudo apt-get install -y mongodb-org
+
+Node.js
+
+    curl -sL https://deb.nodesource.com/setup | sudo bash -
+    sudo apt-get install -y nodejs
+
+Node-IRC and Mongoose
+    
+    sudo npm install irc
+    sudo npm install mongoose

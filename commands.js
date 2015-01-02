@@ -32,7 +32,7 @@ module.exports = {
 					db.getViewerDonations(sender, function(donations) {
 						var thanks = "";
 						if (donations >= 1) {
-							thanks = "! Thank you very much!"
+							thanks = "! Thank you very much!";
 						}
 						bot.say(channel, sender + ": You've donated " + format.money(donations) + thanks);
 					});
@@ -49,7 +49,10 @@ module.exports = {
 					var secondsToAdd = 0;
 					var now = Math.floor(new Date().getTime() / 1000);
 					// Time between pings
-					if (cv.currentViewers[v].timestamp < cv.timeLastUpdated) {
+					var v = cv.indexOfViewer(sender);
+					if (v === -1) {
+						secondsToAdd = 0;
+					} else if (cv.currentViewers[v].timestamp < cv.timeLastUpdated) {
 						secondsToAdd = now - cv.timeLastUpdated;
 					// Time between when the user joined and now
 					} else {
@@ -57,16 +60,14 @@ module.exports = {
 					}
 					seconds += secondsToAdd;
 					bot.say(channel, sender + ": You've watched " +
-						channel_name + " sit at his computer for " + format.seconds(seconds) + " in total.");
+						channel_name + " sit at his computer for " +
+						format.seconds(seconds) + " in total.");
 				});
 				break;
 			/*	======= DEBUG COMMAND =======
 			 * !mysessiontime returns the number of time the user has watched that session
 			 */
 			case 'mysessiontime':
-				// ================================================================================================
-				// TODO: I'm fairly sure I need to copy what I have from current-viewers.js:84 to make this work 
-				// ================================================================================================
 				for (var v in cv.currentViewers) {
 					if (cv.currentViewers[v].username === sender) {
 						var secondsToday = Math.floor(new Date().getTime() / 1000) - cv.currentViewers[v].timestamp;

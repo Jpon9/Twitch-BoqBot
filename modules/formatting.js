@@ -40,7 +40,7 @@ module.exports = {
 	},
 
 	dateDiff: function(dateToDiff) {
-		module.exports.seconds(Math.abs((new Date().getTime() / 1000) - dateToDiff));
+		return module.exports.seconds(Math.abs((new Date().getTime() / 1000) - dateToDiff));
 	},
 
 	number: function(num, decimals) {
