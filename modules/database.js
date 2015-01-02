@@ -145,14 +145,7 @@ module.exports = {
 	// Calls getViewerData and returns seconds_watched value
 	getViewerSeconds: function(viewer, callback) {
 		module.exports.getViewerData(viewer, function(v) {
-			var sessionSeconds = 0;
-			for (var i in cv.currentViewers) {
-				if (cv.currentViewers[i].username === viewer) {
-					sessionSeconds = Math.floor(new Date().getTime() / 1000) - cv.currentViewers[i].timestamp;
-					break;
-				}
-			}
-			callback(v.seconds_watched + sessionSeconds);
+			callback(v.seconds_watched);
 		});
 	},
 
