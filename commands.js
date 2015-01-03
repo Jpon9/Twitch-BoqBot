@@ -24,6 +24,13 @@ module.exports = {
 				// Do nothing yet
 				break;
 			/*
+			 * !recap works in tandem with !highlight to let the broadcaster
+			 * grab the highlighted moments after a stream
+			 */
+			case 'recap':
+
+				break;
+			/*
 			 * !donation allows the streamer (or bot creator) to specify a donation amount
 			 *			 coming from a certain generous user
 			 */

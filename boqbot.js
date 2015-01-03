@@ -20,6 +20,7 @@ var cmds = require('./commands');
 var hal9000 = require('./modules/hal9000');
 var db = require('./modules/database');
 var cv = require('./modules/current-viewers');
+var uptime = require('./modules/twitch-stream-uptime');
 
 console.log("Connecting to the database...");
 db.connect('localhost', 'test');
@@ -35,15 +36,16 @@ var bot = new irc.Client(settings.server, settings.username, {
 	autoRejoin: true
 });
 
-// Initialize the current viewers module
+// Initialize modules
 cv.init(bot, db);
+uptime.init(settings.channel);
 
 bot.addListener("connect", function() {
 	console.log("Connected to the channel.");
 	bot.say(settings.channel, "/color " + settings.chatname_color);
 	setTimeout(function() {
-		console.log("Sending welcome message...");
-		bot.say(settings.channel, "BoqBot is ALIVE!  I am a bot coded by http://twitter.com/Jpon9/ to help facilitate boq_TV's stream chat.  You can find my code on GitHub at http://github.com/Jpon9/Twitch-BoqBot/.");
+		//console.log("Sending welcome message...");
+		//bot.say(settings.channel, "BoqBot is ALIVE!  I am a bot coded by http://twitter.com/Jpon9/ to help facilitate boq_TV's stream chat.  You can find my code on GitHub at http://github.com/Jpon9/Twitch-BoqBot/.");
 	}, 2500);
 });
 

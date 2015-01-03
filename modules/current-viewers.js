@@ -3,6 +3,7 @@
  *	This module assists in keeping track of which viewers are currently
  *	viewing the stream and tracks their seconds in the connected MongoDB
  */
+var uptime = require('./twitch-stream-uptime');
 
 module.exports = {
 	// Holds all currently viewing individuals as,
@@ -24,12 +25,14 @@ module.exports = {
 	// Adds a viewer to the current viewers list
 	addViewer: function(nick, db) {
 		// If the viewer isn't already in the list
-		if (module.exports.indexOfViewer(nick) === -1) {
+		if (module.exports.indexOfViewer(nick) === -1 && uptime.isStreaming) {
 			// Add them to the current viewers list
 			module.exports.currentViewers.push({
 				username: nick,
 				timestamp: Math.floor(new Date().getTime() / 1000)
 			});
+
+			console.log(nick + " is now viewing.");
 		}
 
 		db.addViewerIfNotExists({
@@ -54,6 +57,8 @@ module.exports = {
 			// Add the delta seconds to the user's seconds.
 			var seconds = Math.floor(Math.floor(new Date().getTime() / 1000) - viewer.timestamp);
 			db.addViewerSeconds(viewer.username, seconds);
+
+			console.log(nick + " is no longer viewing.");
 		}
 	},
 
@@ -77,6 +82,11 @@ module.exports = {
 
 		// Adds
 		bot.addListener('ping', function(server) {
+			if (!uptime.isStreaming) {
+				for (viewer in module.exports.currentViewers) {
+					module.exports.removeViewer(viewer.username, db);
+				}
+			}
 			var now = Math.floor(new Date().getTime() / 1000);
 			for (var v in module.exports.currentViewers) {
 				var secondsAdded = 0;
