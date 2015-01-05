@@ -1,5 +1,4 @@
 var https = require('https');
-var format = require('./formatting');
 
 function getIsStreaming(channel_name, callback) {
 	var streamer = channel_name.replace('#', '');
@@ -40,14 +39,18 @@ var numTimesDifferent = 0;
 function updateIsStreaming(channel_name) {
 	getIsStreaming(channel_name, function(streaming) {
 		if (typeof streaming === 'boolean') {
-			if (!streaming !== module.exports.isStreaming) {
+			if (streaming !== module.exports.isStreaming) {
 				numTimesDifferent += 1;
 			}
 			if (numTimesDifferent > 4) {
-				module.exports.isStreaming = !streaming;
+				module.exports.isStreaming = streaming;
 				numTimesDifferent = 0;
+				if (streaming) {
+					cv.chattersNowViewing();
+				} else {
+					cv.chattersNotViewing();
+				}
 			}
-			console.log(channel_name.replace('#','') + " is" + (streaming ? "" : " not") + " streaming");
 		}
 	})
 }

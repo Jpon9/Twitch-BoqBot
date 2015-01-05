@@ -1,5 +1,4 @@
 var mongoose = require('mongoose');
-var cv = require('./current-viewers');
 
 var ChatMessage = undefined;
 var Viewer = undefined;

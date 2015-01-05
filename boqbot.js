@@ -18,9 +18,10 @@ settings = require('./settings.json');
 var irc = require('irc');
 var cmds = require('./commands');
 var hal9000 = require('./modules/hal9000');
-var db = require('./modules/database');
-var cv = require('./modules/current-viewers');
-var uptime = require('./modules/twitch-stream-uptime');
+db = require('./modules/database');
+cv = require('./modules/current-viewers');
+uptime = require('./modules/twitch-stream-uptime');
+format = require('./modules/formatting');
 
 console.log("Connecting to the database...");
 db.connect('localhost', 'test');
@@ -44,8 +45,8 @@ bot.addListener("connect", function() {
 	console.log("Connected to the channel.");
 	bot.say(settings.channel, "/color " + settings.chatname_color);
 	setTimeout(function() {
-		//console.log("Sending welcome message...");
-		//bot.say(settings.channel, "BoqBot is ALIVE!  I am a bot coded by http://twitter.com/Jpon9/ to help facilitate boq_TV's stream chat.  You can find my code on GitHub at http://github.com/Jpon9/Twitch-BoqBot/.");
+		console.log("Sending welcome message...");
+		bot.say(settings.channel, "BoqBot is ALIVE!  I am a bot coded by http://twitter.com/Jpon9/ to help facilitate boq_TV's stream chat.  You can find my code on GitHub at http://github.com/Jpon9/Twitch-BoqBot/.");
 	}, 2500);
 });
 
@@ -61,7 +62,7 @@ bot.addListener('message', function(sender, channel, text, message) {
 	// Add them to the currently viewing list
 	// if Twitch didn't tell us about the yet
 	if (cv.indexOfViewer(sender) === -1) {
-		cv.addViewer(sender, db);
+		cv.addViewer(sender);
 	}
 
 	// Get the number of viewers, add if they're not already

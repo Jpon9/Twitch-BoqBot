@@ -1,8 +1,3 @@
-var uptime = require('./modules/twitch-stream-uptime');
-var db = require('./modules/database');
-var cv = require('./modules/current-viewers');
-var format = require('./modules/formatting');
-
 module.exports = {
 	handleCommand: function(bot, command, parameters, sender, channel) {
 		var channel_name = channel.replace('#', '');
@@ -82,6 +77,15 @@ module.exports = {
 						break;
 					}
 				}
+				if (!cv.isStreaming && cv.currentViewers.length === 0) {
+					bot.say(channel, sender + ": " + channel_name + " is not streaming right now, so your time is not being tracked.");
+				}
+				break;
+			/*	======= DEBUG COMMAND =======
+			 * !viewers returns the current number of viewers as recorded by the bot
+			 */
+			case 'chatters':
+				bot.say(channel, sender + ": There are currently " + cv.allChatters.length + " chatters.");
 				break;
 			/*	======= DEBUG COMMAND =======
 			 * !viewers returns the current number of viewers as recorded by the bot
