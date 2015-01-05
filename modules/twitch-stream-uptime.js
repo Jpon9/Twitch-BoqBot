@@ -35,10 +35,18 @@ function getIsStreaming(channel_name, callback) {
 	});
 }
 
+var numTimesDifferent = 0;
+
 function updateIsStreaming(channel_name) {
 	getIsStreaming(channel_name, function(streaming) {
 		if (typeof streaming === 'boolean') {
-			module.exports.isStreaming = !streaming;
+			if (!streaming !== module.exports.isStreaming) {
+				numTimesDifferent += 1;
+			}
+			if (numTimesDifferent > 4) {
+				module.exports.isStreaming = !streaming;
+				numTimesDifferent = 0;
+			}
 			console.log(channel_name.replace('#','') + " is" + (streaming ? "" : " not") + " streaming");
 		}
 	})
