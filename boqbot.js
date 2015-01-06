@@ -11,7 +11,14 @@ settings = require('./settings.json');
 		"oauth_token": "oauth:super_secret_oauth_token",
 		"server": "irc.twitch.tv",
 		"channel": "#channel_name",
-		"chatname_color": "CadetBlue"
+		"chatname_color": "CadetBlue",
+		"twitter": {
+			"consumer_key": "super_secret_consumer_key",
+			"consumer_secret": "super_secret_consumer_secret",
+			"access_token": "super_secret_access_token",
+			"access_secret": "super_secret_access_secret"
+		},
+		"tweet_to_check": "tweet_id_goes_here"
 	}
 */
 
