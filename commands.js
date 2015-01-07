@@ -8,7 +8,7 @@ module.exports = {
 			 */
 			case 'uptime': 
 				uptime.getTwitchStreamUptimeString(channel, function(uptime) {
-					bot.say(channel, sender + ", " + uptime);
+					bot.say(channel, sender + ": " + uptime);
 				});
 				break;
 			/*
@@ -80,28 +80,6 @@ module.exports = {
 				if (!cv.isStreaming && cv.currentViewers.length === 0) {
 					bot.say(channel, sender + ": " + channel_name + " is not streaming right now, so your time is not being tracked.");
 				}
-				break;
-			/*	======= DEBUG COMMAND =======
-			 * !viewers returns the current number of viewers as recorded by the bot
-			 */
-			case 'chatters':
-				bot.say(channel, sender + ": There are currently " + cv.allChatters.length + " chatters.");
-				break;
-			/*	======= DEBUG COMMAND =======
-			 * !viewers returns the current number of viewers as recorded by the bot
-			 */
-			case 'viewers':
-				bot.say(channel, sender + ": There are currently " + cv.currentViewers.length + " viewers.");
-				break;
-			/*	======= DEBUG COMMAND =======
-			 * !viewerlist returns the full list of people watching the stream
-			 */
-			case 'viewerlist':
-				var viewers = [];
-				for (v in cv.currentViewers) {
-					viewers.push(cv.currentViewers[v].username);
-				}
-				bot.say(channel, sender + ": " + viewers.join(', '));
 				break;
 			default:
 				console.log(sender + " sent a command I don't recognize in " + channel + " (!" + command + ").");
