@@ -16,7 +16,7 @@ settings = require('./settings.json');
 			"consumer_key": "super_secret_consumer_key",
 			"consumer_secret": "super_secret_consumer_secret",
 			"access_token": "super_secret_access_token",
-			"access_secret": "super_secret_access_secret"
+			"access_token_secret": "super_secret_access_secret"
 		},
 		"tweet_to_check": "tweet_id_goes_here"
 	}
@@ -29,6 +29,7 @@ db = require('./modules/database');
 cv = require('./modules/current-viewers');
 uptime = require('./modules/twitch-stream-uptime');
 format = require('./modules/formatting');
+var twitter = require('./modules/twitter');
 
 console.log("Connecting to the database...");
 db.connect('localhost', 'test');
@@ -47,6 +48,7 @@ var bot = new irc.Client(settings.server, settings.username, {
 // Initialize modules
 cv.init(bot, db);
 uptime.init(settings.channel);
+twitter.getRetweeters();
 
 bot.addListener("connect", function() {
 	console.log("Connected to the channel.");
