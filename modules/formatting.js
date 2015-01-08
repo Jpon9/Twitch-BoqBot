@@ -1,3 +1,8 @@
+// Utility function, makes certain numbers for times and dates look better
+function padNumber(num) {
+    return (num < 10) ? "0" + num : "" + num;
+}
+
 module.exports = {
 	seconds: function(seconds) {
 		var results = [];
@@ -40,7 +45,25 @@ module.exports = {
 	},
 
 	dateDiff: function(dateToDiff) {
-		return module.exports.seconds(Math.abs((new Date().getTime() / 1000) - dateToDiff));
+		return module.exports.seconds(Math.abs(Math.floor(new Date().getTime() / 1000) - Math.floor(dateToDiff)));
+	},
+
+	timestamp: function(seconds) {
+		var results = "";
+
+		var oneMinute = 60;
+		var oneHour = 60 * oneMinute;
+
+		var hours = Math.floor(seconds / oneHour);
+		if (hours > 0) { results += hours + ":"; }
+		seconds -= hours * oneHour;
+		var minutes = Math.floor(seconds / oneMinute);
+		if (minutes > 0) { results += padNumber(minutes) + ":"; }
+		seconds -= minutes * oneMinute;
+		seconds = Math.floor(seconds);
+		results += padNumber(seconds);
+
+		return results;
 	},
 
 	number: function(num, decimals) {

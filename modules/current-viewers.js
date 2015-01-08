@@ -112,6 +112,18 @@ module.exports = {
 			module.exports.removeViewer(nick);
 		});
 
+		bot.addListener('+mode', function(channel, by, mode, argument, message) {
+			if (message.args.length === 3) {
+				moderators.add(message.args[2]);
+			}
+		});
+
+		bot.addListener('-mode', function(channel, by, mode, argument, message) {
+			if (message.args.length === 3) {
+				moderators.remove(message.args[2]);
+			}
+		});
+
 		// Adds
 		bot.addListener('ping', function(server) {
 			var now = Math.floor(new Date().getTime() / 1000);

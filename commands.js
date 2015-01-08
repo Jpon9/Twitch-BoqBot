@@ -1,3 +1,5 @@
+var highlight = require('./modules/highlight');
+
 module.exports = {
 	handleCommand: function(bot, command, parameters, sender, channel) {
 		var channel_name = channel.replace('#', '');
@@ -8,7 +10,7 @@ module.exports = {
 			 */
 			case 'uptime': 
 				uptime.getTwitchStreamUptimeString(channel, function(uptime) {
-					bot.say(channel, sender + ": " + uptime);
+					chat.send(sender + ": " + uptime);
 				});
 				break;
 			/*
@@ -16,14 +18,20 @@ module.exports = {
 			 *			  in case they want to make a highlight for that moment
 			 */
 			case 'highlight':
-				// Do nothing yet
+				if (!moderators.isMod(sender)) {
+					chat.send(sender + ': You must be a moderator to do that.');
+					break;
+				}
+				highlight.create(channel, parameters.join(' '), sender);
 				break;
 			/*
 			 * !recap works in tandem with !highlight to let the broadcaster
 			 * grab the highlighted moments after a stream
 			 */
 			case 'recap':
-
+				if (sender === channel_name) {
+					highlight.recap();
+				}
 				break;
 			/*
 			 * !donation allows the streamer (or bot creator) to specify a donation amount
@@ -36,11 +44,11 @@ module.exports = {
 						if (donations >= 1) {
 							thanks = "! Thank you very much!";
 						}
-						bot.say(channel, sender + ": You've donated " + format.money(donations) + thanks);
+						chat.send(sender + ": You've donated " + format.money(donations) + thanks);
 					});
 				} else if (sender === channel_name) {
 					db.addViewerDonation(parameters[0], parameters[1]);
-					bot.say(channel, sender + ": You've added " + format.money(parameters[1]) + " to " + parameters[0] + "'s donation amount.");
+					chat.send(sender + ": You've added " + format.money(parameters[1]) + " to " + parameters[0] + "'s donation amount.");
 				}
 				break;
 			/*	======= DEBUG COMMAND =======
@@ -61,7 +69,7 @@ module.exports = {
 						secondsToAdd = now - cv.currentViewers[v].timestamp;
 					}
 					seconds += secondsToAdd;
-					bot.say(channel, sender + ": You've watched " +
+					chat.send(sender + ": You've watched " +
 						channel_name + " sit at his computer for " +
 						format.seconds(seconds) + " in total.");
 				});
@@ -73,12 +81,12 @@ module.exports = {
 				for (var v in cv.currentViewers) {
 					if (cv.currentViewers[v].username === sender) {
 						var secondsToday = Math.floor(new Date().getTime() / 1000) - cv.currentViewers[v].timestamp;
-						bot.say(channel, sender + ": You've been watching for " + format.seconds(secondsToday) + " this session.");
+						chat.send(sender + ": You've been watching for " + format.seconds(secondsToday) + " this session.");
 						break;
 					}
 				}
 				if (!cv.isStreaming && cv.currentViewers.length === 0) {
-					bot.say(channel, sender + ": " + channel_name + " is not streaming right now, so your time is not being tracked.");
+					chat.send(sender + ": " + channel_name + " is not streaming right now, so your time is not being tracked.");
 				}
 				break;
 			default:
