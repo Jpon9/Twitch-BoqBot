@@ -1,5 +1,6 @@
 var help = require('./help.json');
 var highlight = require('./modules/highlight');
+var invite = require('./modules/invite-viewers');
 
 function lowercase(arr) {
 	return arr.join('`-*|').toLowerCase().split('`-*|');
@@ -15,25 +16,83 @@ function vetInput(re, params) {
 	return vetted;
 }
 
+function validateGroupToInvite(group) {
+	var toInvite = null;
+	switch (group) {
+		case 'viewer':
+		case 'viewers':
+			toInvite = 'viewers';
+			break;
+		case 'mod':
+		case 'mods':
+		case 'moderator':
+		case 'moderators':
+			toInvite = 'moderators';
+			break;
+	}
+	return toInvite;
+}
+
+function validateNumToInvite(num) {
+	var numToInvite = null;
+	if ((num >= 1 || num <= 10) && !isNaN(num)) {
+		numToInvite = parseInt(num);
+	}
+	return numToInvite;
+}
+
 module.exports = {
 	handleCommand: function(bot, command, parameters, sender, channel) {
 		var channel_name = channel.replace('#', '');
 
 		switch (command) {
 			case 'help':
-				break;
-					parameters = lowercase(parameters);
-					if (parameters.length > 2) {
-						chat.send(sender + ': Invalid number of arguments.');
-						// TODO: Implement the help command
-						break;	
-					}
-					chat.send(sender + ': ' + )
+				break; // Not implemented yet
+				parameters = lowercase(parameters);
+				if (parameters.length > 2) {
+					chat.send(sender + ': Invalid number of arguments.');
+					// TODO: Implement the help command
+					break;
+				}
+				chat.send(sender + ': ' + '');
 				break;
 			case 'boqbot':
 				chat.send(sender + ": I am BoqBot, created by http://twitter.com/Jpon9 for boq_TV. " +
 					"Type !help <command_name> for usage on any of the following commands: " +
-					"!addsong !uptime !highlight !recap !donation !mytime !mysessiontime")
+					"!addsong !uptime !highlight !recap !donation !mytime !mysessiontime !invite");
+				break;
+			/*
+			 *	Invites a certain number of people from a certain chat group to play with the broadcaster
+			 */
+			case 'invite':
+				parameters = lowercase(parameters);
+				var defaultNumToInvite = 4;
+				var defaultGroupToInvite = 'viewers';
+				var numToInvite = defaultNumToInvite;
+				var groupToInvite = defaultGroupToInvite;
+
+				if (parameters.length === 1) {
+					groupToInvite = validateGroupToInvite(parameters[0]);
+					numToInvite = validateNumToInvite(parameters[0]);
+					if (groupToInvite === null && numToInvite === null) {
+						chat.send(sender + ': Invalid usage of !invite');
+						break;
+					}
+					if (groupToInvite === null) { groupToInvite = defaultGroupToInvite; }
+					if (numToInvite === null) { numToInvite = defaultNumToInvite; }
+				} else if (parameters.length === 2) {
+					groupToInvite = validateGroupToInvite(parameters[0]);
+					numToInvite = validateNumToInvite(parameters[1]);
+					if (groupToInvite === null || numToInvite === null) {
+						chat.send(sender + ': Invalid usage of !invite');
+						break;
+					}
+				}
+				switch (groupToInvite) {
+					case 'viewers': invite.viewers(numToInvite); break;
+					case 'moderators': invite.moderators(numToInvite); break;
+					default: chat.send(sender + ': Invalid group to invite'); break;
+				}
 				break;
 			/*
 			 *	Adds a song to the playlist specified in settings.json
@@ -101,13 +160,14 @@ module.exports = {
 					var now = Math.floor(new Date().getTime() / 1000);
 					// Time between pings
 					var v = cv.indexOfViewer(sender);
+					var currentViewers = cv.getCurrentViewers();
 					if (v === -1) {
 						secondsToAdd = 0;
-					} else if (cv.currentViewers[v].timestamp < cv.timeLastUpdated) {
+					} else if (currentViewers[v].timestamp < cv.timeLastUpdated) {
 						secondsToAdd = now - cv.timeLastUpdated;
 					// Time between when the user joined and now
 					} else {
-						secondsToAdd = now - cv.currentViewers[v].timestamp;
+						secondsToAdd = now - currentViewers[v].timestamp;
 					}
 					seconds += secondsToAdd;
 					chat.send(sender + ": You've watched " +
@@ -119,14 +179,15 @@ module.exports = {
 			 * !mysessiontime returns the number of time the user has watched that session
 			 */
 			case 'mysessiontime':
-				for (var v in cv.currentViewers) {
-					if (cv.currentViewers[v].username === sender) {
-						var secondsToday = Math.floor(new Date().getTime() / 1000) - cv.currentViewers[v].timestamp;
+				var currentViewers = cv.getCurrentViewers();
+				for (var v in currentViewers) {
+					if (currentViewers[v].username === sender) {
+						var secondsToday = Math.floor(new Date().getTime() / 1000) - currentViewers[v].timestamp;
 						chat.send(sender + ": You've been watching for " + format.seconds(secondsToday) + " this session.");
 						break;
 					}
 				}
-				if (!cv.isStreaming && cv.currentViewers.length === 0) {
+				if (!cv.isStreaming && currentViewers.length === 0) {
 					chat.send(sender + ": " + channel_name + " is not streaming right now, so your time is not being tracked.");
 				}
 				break;

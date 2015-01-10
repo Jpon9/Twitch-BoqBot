@@ -1,0 +1,17 @@
+{
+	"username": "bot_twitch_username",
+	"oauth_token": "oauth:bot_twitch_account_irc_oauth_token",
+	"server": "irc.twitch.tv",
+	"channel": "#broadcaster_account_name_lowercased",
+	"chatname_color": "CadetBlue",
+	"spotify": {
+		"current_user": "spotify_username",
+		"target_playlist": "spotify_playlist_uri",
+		"oauth": {
+			"client_id": "spotify_bot_client_id",
+			"client_secret": "spotify_bot_client_secret",
+			"authorization_code": "auth_code_for_initial_authentication",
+			"redirect_uri": "callback_url_for_after_authentication"
+		}
+	}
+}

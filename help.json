@@ -33,5 +33,10 @@
 		"description": "Displays the amount of time the broadcaster has been streaming that session.",
 		"usage": "!uptime",
 		"example": "!uptime"
+	},
+	"invite": {
+		"description": "Lets a moderator or the broadcaster invite a certain number of random people from a certain chat group to play with the broadcaster. The default behavior is to invite four viewers. When the group or number to invite is not specified, the corresponding default value will be used.",
+		"usage": "!invite OR !invite <number> OR !invite <'viewers'/'moderators'> OR !invite <number> <'viewers'/'moderators'>",
+		"example": "!invite 3 moderators"
 	}
 }

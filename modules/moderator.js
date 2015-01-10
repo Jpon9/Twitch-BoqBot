@@ -20,5 +20,9 @@ module.exports = {
 		} else {
 			return false;
 		}
+	},
+
+	getMods: function() {
+		return moderators.slice();
 	}
 }

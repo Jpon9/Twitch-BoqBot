@@ -1,34 +1,14 @@
 // Load the settings file
 settings = require('./settings.json');
 
-/*
-	The settings file contains sensitive information,
-	so it is .gitignored from this project. It contains
-	a flat object that looks like this:
-
-	{
-		"username": "twitch_username",
-		"oauth_token": "oauth:secret_oauth_token",
-		"server": "irc.twitch.tv",
-		"channel": "#target_channel",
-		"chatname_color": "CadetBlue",
-		"spotify": {
-			"current_user": "spotify_username",
-			"target_playlist": "playlist_uri",
-			"oauth": {
-				"client_id": "your_bots_spotify_client_id",
-				"client_secret": "your_bots_spotify_client_secret",
-				"authorization_code": "super_long_auth_token_for_first_time_login",
-				"redirect_uri": "where_to_return_user_after_authentication"
-			}
-		}
-	}
-*/
-
+// Dependencies for Spotify Web API wrapper
 require('promise');
 require('restler');
 
+// Used to connect to IRC
 var irc = require('irc');
+
+// Our modules, global ones can be used anywhere
 var cmds = require('./commands');
 var hal9000 = require('./modules/hal9000');
 db = require('./modules/database');
@@ -60,9 +40,9 @@ function initializeBoqbot() {
 
 	bot.addListener("connect", function() {
 		console.log("Connected to the channel.");
-		chat.send("/color " + settings.chatname_color);
 		setTimeout(function() {
 			console.log("Sending welcome message...");
+			chat.send("/color " + settings.chatname_color);
 			chat.send("BoqBot is ALIVE!  I am a bot coded by http://twitter.com/Jpon9/ to help facilitate boq_TV's stream chat.  You can find my code on GitHub at http://github.com/Jpon9/Twitch-BoqBot/.");
 		}, 2500);
 	});

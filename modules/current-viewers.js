@@ -4,18 +4,41 @@
  *	viewing the stream and tracks their seconds in the connected MongoDB
  */
 
+var currentViewers = [];
+var allChatters = [];
+
 module.exports = {
 	// Holds all currently viewing individuals as,
 	// This is checked to update seconds_watched values.
 	// Objects in this array hold a join timestamp and nick
-	currentViewers: [],
-	allChatters: [],
 	timeLastUpdated: Math.floor(new Date().getTime() / 1000),
+
+	getCurrentViewers: function(namesOnly) {
+		namesOnly = (typeof namesOnly === 'boolean' ? namesOnly : false) || false;
+		if (!namesOnly) { return currentViewers; }
+
+		var names = [];
+		for (var i in currentViewers) {
+			names.push(currentViewers[i].username);
+		}
+		return names;
+	},
+
+	getAllChatters: function(namesOnly) {
+		namesOnly = namesOnly || false;
+		if (!namesOnly) { return allChatters; }
+
+		var names = [];
+		for (var i in allChatters) {
+			names.push(allChatters[i].username);
+		}
+		return names;
+	},
 
 	// Returns the index of the viewer based on his/her string name
 	indexOfViewer: function(viewer) {
-		for (var i in module.exports.currentViewers) {
-			if (module.exports.currentViewers[i].username === viewer) {
+		for (var i in currentViewers) {
+			if (currentViewers[i].username === viewer) {
 				return i;
 			}
 		}
@@ -24,8 +47,8 @@ module.exports = {
 
 	// Returns the index of the viewer based on his/her string name
 	indexOfChatter: function(viewer) {
-		for (var i in module.exports.allChatters) {
-			if (module.exports.allChatters[i].username === viewer) {
+		for (var i in allChatters) {
+			if (allChatters[i].username === viewer) {
 				return i;
 			}
 		}
@@ -33,14 +56,14 @@ module.exports = {
 	},
 
 	chattersNowViewing: function() {
-		for (var i in module.exports.allChatters) {
-			module.exports.addViewer(module.exports.allChatters[i].username);
+		for (var i in allChatters) {
+			module.exports.addViewer(allChatters[i].username);
 		}
 	},
 
 	chattersNotViewing: function() {
-		for (viewer in module.exports.allChatters) {
-			module.exports.removeViewer(module.exports.allChatters[viewer].username, true);
+		for (viewer in allChatters) {
+			module.exports.removeViewer(allChatters[viewer].username, true);
 		}
 	},
 
@@ -54,11 +77,11 @@ module.exports = {
 
 		// Keep track of chatters i.e. viewers when stream is not live
 		if (module.exports.indexOfChatter(nick) === -1) {
-			module.exports.allChatters.push(viewer);
+			allChatters.push(viewer);
 		}
 		// If the viewer isn't already in the list, add them
 		if (module.exports.indexOfViewer(nick) === -1 && uptime.isStreaming) {
-			module.exports.currentViewers.push(viewer);
+			currentViewers.push(viewer);
 		}
 
 		db.addViewerIfNotExists({
@@ -76,10 +99,10 @@ module.exports = {
 
 		if (index !== -1) {
 			// Get the viewer object
-			var viewer = module.exports.currentViewers[index];
+			var viewer = currentViewers[index];
 
 			// Remove parted viewer from the current viewers
-			module.exports.currentViewers.splice(index, 1);
+			currentViewers.splice(index, 1);
 
 			// Add the delta seconds to the user's seconds.
 			var seconds = Math.floor(Math.floor(new Date().getTime() / 1000) - viewer.timestamp);
@@ -90,7 +113,7 @@ module.exports = {
 
 		if (index !== -1 && !stillInChat) {
 			// Remove parted viewer from the chatters list
-			module.exports.allChatters.splice(index, 1);
+			allChatters.splice(index, 1);
 		}
 	},
 
@@ -127,21 +150,21 @@ module.exports = {
 		// Adds
 		bot.addListener('ping', function(server) {
 			var now = Math.floor(new Date().getTime() / 1000);
-			for (var v in module.exports.currentViewers) {
+			for (var v in currentViewers) {
 				var secondsAdded = 0;
 				// Time between pings
-				if (module.exports.currentViewers[v].timestamp < module.exports.timeLastUpdated) {
+				if (currentViewers[v].timestamp < module.exports.timeLastUpdated) {
 					secondsAdded = now - module.exports.timeLastUpdated;
 					db.addViewerSeconds(
-						module.exports.currentViewers[v].username,
+						currentViewers[v].username,
 						now - module.exports.timeLastUpdated
 					);
 				// Time between when the user joined and now
 				} else {
-					secondsAdded = now - module.exports.currentViewers[v].timestamp;
+					secondsAdded = now - currentViewers[v].timestamp;
 					db.addViewerSeconds(
-						module.exports.currentViewers[v].username,
-						now - module.exports.currentViewers[v].timestamp
+						currentViewers[v].username,
+						now - currentViewers[v].timestamp
 					);
 				}
 			}

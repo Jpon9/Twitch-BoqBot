@@ -13,15 +13,24 @@ function refreshAccessToken() {
 	spotify.refreshAccessToken()
 		.then(
 			function(data) {
+				// Update the access token
+				spotify.setAccessToken(data['access_token']);
+
 				var now = Math.floor(new Date().getTime() / 1000);
 				// The epoch in seconds of the expiration of the token
 				tokenExpirationEpoch = now + data['expires_in'];
+				// Update the user data in MongoDB so we can continue to use the user's data
 				db.updateSpotifyUser(settings.spotify.current_user, data['access_token'], data['refresh_token'], tokenExpirationEpoch);
+				// Send info to console
 				console.log('Refreshed Spotify access token. It will expire in exactly ' + format.seconds(tokenExpirationEpoch - now) + '.');
+				// Set us up to refresh the token in a little less than the timeout period.
 				setTimeout(refreshAccessToken, (data['expires_in'] - 5) * 1000);
 			},
 			function(err) {
 				console.error('Could not refresh the Spotify access token!', err);
+				if (err === '[Error: The access token expired]') {
+					console.info('String detectable! spotify.js:45');
+				}
 			}
 		);
 }
@@ -34,7 +43,7 @@ module.exports = {
 
 	// Takes an array of songs, usually the alias above is used more frequently
 	addSongs: function(sender, spotify_ids) {
-		spotify.addTracksToPlaylist(settings.spotify.current_user, '64n69M2EintjjtB87POxtk', spotify_ids)
+		spotify.addTracksToPlaylist(settings.spotify.current_user, settings.spotify.target_playlist, spotify_ids)
 			.then(
 				function(data) {
 					var plurality = spotify_ids.length > 1 ? 's have' : ' has';
