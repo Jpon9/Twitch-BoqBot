@@ -5,6 +5,8 @@ function padNumber(num) {
 
 module.exports = {
 	seconds: function(seconds) {
+		seconds = Math.floor(seconds);
+
 		var results = [];
 
 		var oneMinute = 60;
@@ -33,7 +35,7 @@ module.exports = {
 		if (minutes > 0) { results.push(minutes + " minute" + (minutes !== 1 ? "s" : "")); }
 		seconds -= minutes * oneMinute;
 		seconds = Math.floor(seconds);
-		results.push(seconds + " second" + (seconds !== 1 ? "s" : ""));
+		if (seconds > 0) { results.push(seconds + " second" + (seconds !== 1 ? "s" : "")); }
 
 		if (results.length > 2) {
 			var popped = results.pop();

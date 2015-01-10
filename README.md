@@ -12,10 +12,10 @@ This bot aims to facilitate the chat and perform tasks for boq and his moderator
 * Records chat messages.
 * Tracks donations. (!donation)
 * Determine the amount of time a streamer has been streaming. (!uptime)
+* Give moderators the ability to highlight a specific part of the stream for boq to go back and upload to Youtube. (!highlight, !recap)
 
 ## Upcoming Features
 
-* Give moderators the ability to highlight a specific part of the stream for boq to go back and upload to Youtube. (!highlight, !recap)
 * Give each viewer a rank based on viewership, chat participation, and donations.
 * Assist in giveaways by automatically checking if a viewer is following @Boq_TV.
 * Allow users to add songs to a specified Spotify(tm) playlist. (!addsong)
@@ -42,3 +42,6 @@ Node-IRC and Mongoose
     
     sudo npm install irc
     sudo npm install mongoose
+    sudo npm install restler
+    sudo npm install promise
+    sudo npm install spotify-web-api-node

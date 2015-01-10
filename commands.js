@@ -1,10 +1,50 @@
+var help = require('./help.json');
 var highlight = require('./modules/highlight');
+
+function lowercase(arr) {
+	return arr.join('`-*|').toLowerCase().split('`-*|');
+}
+
+function vetInput(re, params) {
+	var vetted = [];
+	for (var i in params) {
+		if (re.exec(params[i]) !== null) {
+			vetted.push(params[i]);
+		}
+	}
+	return vetted;
+}
 
 module.exports = {
 	handleCommand: function(bot, command, parameters, sender, channel) {
 		var channel_name = channel.replace('#', '');
 
 		switch (command) {
+			case 'help':
+				break;
+					parameters = lowercase(parameters);
+					if (parameters.length > 2) {
+						chat.send(sender + ': Invalid number of arguments.');
+						// TODO: Implement the help command
+						break;	
+					}
+					chat.send(sender + ': ' + )
+				break;
+			case 'boqbot':
+				chat.send(sender + ": I am BoqBot, created by http://twitter.com/Jpon9 for boq_TV. " +
+					"Type !help <command_name> for usage on any of the following commands: " +
+					"!addsong !uptime !highlight !recap !donation !mytime !mysessiontime")
+				break;
+			/*
+			 *	Adds a song to the playlist specified in settings.json
+			 */
+			case 'addsong':
+				parameters = vetInput(/^spotify:track:[\dA-Za-z]{21,23}$/, parameters);
+				if (parameters.length === 0) {
+					chat.send(sender + ': No valid tracks were given.');
+				}
+				spotify.addSongs(sender, parameters);
+				break;
 			/*
 			 * !uptime returns the amount of time the streamer has been streaming
 			 */
@@ -38,6 +78,7 @@ module.exports = {
 			 *			 coming from a certain generous user
 			 */
 			case 'donation':
+				parameters = lowercase(parameters);
 				if (parameters.length === 0) {
 					db.getViewerDonations(sender, function(donations) {
 						var thanks = "";

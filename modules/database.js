@@ -2,10 +2,11 @@ var mongoose = require('mongoose');
 
 var ChatMessage = undefined;
 var Viewer = undefined;
+var SpotifyUser = undefined;
 
 module.exports = {
 	// Connects to the database
-	connect: function(hostname, databaseName) {
+	connect: function(hostname, databaseName, callback) {
 		mongoose.connect("mongodb://" + hostname + "/" + databaseName);
 
 		var db = mongoose.connection;
@@ -29,10 +30,23 @@ module.exports = {
 				donation_amount: {type: Number}
 			});
 
+			var SpotifyUserSchema = new Schema({
+				username: {type: String, unique: true},
+				refresh_token: {type: String},
+				access_token: {type: String},
+				expiration_epoch: {type: Number}
+			});
+
 			ChatMessage = mongoose.model('ChatMessage', ChatMessageSchema);
 			Viewer = mongoose.model('Viewer', ViewerSchema);
+			SpotifyUser = mongoose.model('SpotifyUser', SpotifyUserSchema);
+			callback();
 		});
 	},
+
+	/* ======================
+	 *	  VIEWER FUNCTIONS
+	 * ====================== */
 
 	// Returns the viewer's object from MongoDB
 	getViewerData: function(viewer, callback) {
@@ -165,6 +179,69 @@ module.exports = {
 	getViewerDonations: function(viewer, callback) {
 		module.exports.getViewerData(viewer, function(v) {
 			callback(v.donation_amount);
+		});
+	},
+
+	/* =============================
+	 *	  SPOTIFY OAUTH FUNCTIONS
+	 * ============================= */
+
+	addSpotifyUser: function(user) {
+		if (typeof user.username !== 'string') {
+			console.log("Invalid username attempted to be entered in Spotify Users document.");
+			return;
+		}
+		user.access_token = user.access_token || "";
+		user.refresh_token = user.refresh_token || "";
+		user.expiration_epoch = user.expiration_epoch || 0;
+
+		var spotifyUser = new SpotifyUser({
+			username: user.username,
+			access_token: user.access_token,
+			refresh_token: user.refresh_token,
+			expiration_epoch: user.expiration_epoch
+		});
+
+		spotifyUser.save(function (err) {
+			if (err) {
+				if (err.code === 11000) { // Duplicate index, this is intentional
+					module.exports.updateSpotifyUser(user.username, user.refresh_token, user.access_token, user.expiration_epoch);
+					return;
+				}
+				console.error('Error adding Spotify user to MongoDB!');
+				console.error(err);
+			} else {
+				console.log(user.username + "'s Spotify has been added to MongoDB.");
+			}
+		});
+	},
+
+	updateSpotifyUser: function(username, access_token, refresh_token, expiration_epoch) {
+		var query = {
+			username: username
+		};
+		var update = {
+			access_token: access_token,
+			refresh_token: refresh_token,
+			expiration_epoch: expiration_epoch
+		};
+		Viewer.update(query, update, function(err, data) {
+			if (err) {
+				console.error('Error updating ' + username + '\'s Spotify data.', err);
+			} else if (data !== 0) {
+				console.log('User ' + username + '\'s Spotify details have been updated.');
+			}
+		});
+	},
+
+	getSpotifyUser: function(username, callback) {
+		SpotifyUser.findOne({username: username}, function(err, v) {
+			if (err) {
+				console.error('Error getting ' + username + '\'s Spotify data');
+				console.error(err);
+				callback(null);
+			}
+			callback(v);
 		});
 	}
 }

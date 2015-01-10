@@ -3,24 +3,30 @@ settings = require('./settings.json');
 
 /*
 	The settings file contains sensitive information,
-	so it is .gitignored from this project.  It contains
+	so it is .gitignored from this project. It contains
 	a flat object that looks like this:
 
 	{
-		"username": "boqbot",
-		"oauth_token": "oauth:super_secret_oauth_token",
+		"username": "twitch_username",
+		"oauth_token": "oauth:secret_oauth_token",
 		"server": "irc.twitch.tv",
-		"channel": "#channel_name",
+		"channel": "#target_channel",
 		"chatname_color": "CadetBlue",
-		"twitter": {
-			"consumer_key": "super_secret_consumer_key",
-			"consumer_secret": "super_secret_consumer_secret",
-			"access_token": "super_secret_access_token",
-			"access_token_secret": "super_secret_access_secret"
-		},
-		"tweet_to_check": "tweet_id_goes_here"
+		"spotify": {
+			"current_user": "spotify_username",
+			"target_playlist": "playlist_uri",
+			"oauth": {
+				"client_id": "your_bots_spotify_client_id",
+				"client_secret": "your_bots_spotify_client_secret",
+				"authorization_code": "super_long_auth_token_for_first_time_login",
+				"redirect_uri": "where_to_return_user_after_authentication"
+			}
+		}
 	}
 */
+
+require('promise');
+require('restler');
 
 var irc = require('irc');
 var cmds = require('./commands');
@@ -31,79 +37,82 @@ uptime = require('./modules/twitch-stream-uptime');
 format = require('./modules/formatting');
 moderators = require('./modules/moderator');
 chat = require('./modules/chat');
-//var twitter = require('./modules/twitter');
+spotify = require('./modules/spotify');
 
-console.log("Connecting to the database...");
-db.connect('localhost', 'test');
-
-console.log("Connecting to IRC...");
-var bot = new irc.Client(settings.server, settings.username, {
-	channels: [settings.channel + " " + settings.oauth_token],
-	password: settings.oauth_token,
-	userName: settings.username,
-	realName: "boq_TV's Chat Bot",
-	debug: true,
-	showErrors: true,
-	autoRejoin: true
-});
-
-// Initialize modules
-chat.init(bot);
-cv.init(bot, db);
-uptime.init(settings.channel);
-//twitter.getRetweeters();
-
-bot.addListener("connect", function() {
-	console.log("Connected to the channel.");
-	chat.send("/color " + settings.chatname_color);
-	setTimeout(function() {
-		console.log("Sending welcome message...");
-		chat.send("BoqBot is ALIVE!  I am a bot coded by http://twitter.com/Jpon9/ to help facilitate boq_TV's stream chat.  You can find my code on GitHub at http://github.com/Jpon9/Twitch-BoqBot/.");
-	}, 2500);
-});
-
-// ========================
-// Listen for user messages
-// ========================
-bot.addListener('message', function(sender, channel, text, message) {
-	// Ignore certain users / greeters
-	if (sender === "jtv" || sender === "nightbot" || sender === "moobot") {
-		return;
-	}
-	
-	// Add them to the currently viewing list
-	// if Twitch didn't tell us about the yet
-	if (cv.indexOfViewer(sender) === -1) {
-		cv.addViewer(sender);
-	}
-
-	// Get the number of viewers, add if they're not already
-	db.getViewers({usernameOnly: true}, function(viewers) {
-		// Keep track of user stats
-		if (viewers.indexOf(sender) === -1) {
-			db.addViewer({
-				username: sender,
-				messages: [text],
-				seconds_watched: 0,
-				donation_amount: 0
-			});
-		} else {
-			db.addViewerMessage(sender, text);
-		}
+// Called once the database connection is established
+function initializeBoqbot() {
+	console.log("Connecting to IRC...");
+	var bot = new irc.Client(settings.server, settings.username, {
+		channels: [settings.channel + " " + settings.oauth_token],
+		password: settings.oauth_token,
+		userName: settings.username,
+		realName: "boq_TV's Chat Bot",
+		debug: false,
+		showErrors: true,
+		autoRejoin: true
 	});
 
-	// Convert the command text to lowercase so it's easier to work with
-	var text_lc = text.toLowerCase();
+	// Initialize modules
+	chat.init(bot);
+	cv.init(bot, db);
+	uptime.init(settings.channel);
+	spotify.init();
 
-	// If a messages starts with !, it's a command
-	if (text.substr(0, 1) === '!') {
-		var commandName = text_lc.substr(1, text_lc.indexOf(' ') > 0 ? text_lc.indexOf(' ') - 1 : text_lc.length - 1);
-		var parameters = text_lc.split(' ');
-		// Removes command name from command, if there are no parameters it returns an empty array
-		parameters.splice(0, 1);
-		cmds.handleCommand(bot, commandName, parameters, sender, channel);
-	// If we're mentioned, run the hal9000 module to talk back
-	} else if (text_lc.search(settings.username) != -1) {
-		hal9000.botMention(bot, channel, sender, text_lc);
-	}
-});
+	bot.addListener("connect", function() {
+		console.log("Connected to the channel.");
+		chat.send("/color " + settings.chatname_color);
+		setTimeout(function() {
+			console.log("Sending welcome message...");
+			chat.send("BoqBot is ALIVE!  I am a bot coded by http://twitter.com/Jpon9/ to help facilitate boq_TV's stream chat.  You can find my code on GitHub at http://github.com/Jpon9/Twitch-BoqBot/.");
+		}, 2500);
+	});
+
+	// ========================
+	// Listen for user messages
+	// ========================
+	bot.addListener('message', function(sender, channel, text, message) {
+		// Ignore certain users / greeters
+		if (sender === "jtv" || sender === "nightbot" || sender === "moobot") {
+			return;
+		}
+		
+		// Add them to the currently viewing list
+		// if Twitch didn't tell us about the yet
+		if (cv.indexOfViewer(sender) === -1) {
+			cv.addViewer(sender);
+		}
+
+		// Get the number of viewers, add if they're not already
+		db.getViewers({usernameOnly: true}, function(viewers) {
+			// Keep track of user stats
+			if (viewers.indexOf(sender) === -1) {
+				db.addViewer({
+					username: sender,
+					messages: [text],
+					seconds_watched: 0,
+					donation_amount: 0
+				});
+			} else {
+				db.addViewerMessage(sender, text);
+			}
+		});
+
+		// Convert the command text to lowercase so it's easier to work with
+		var text_lc = text.toLowerCase();
+
+		// If a messages starts with !, it's a command
+		if (text.substr(0, 1) === '!') {
+			var commandName = text_lc.substr(1, text_lc.indexOf(' ') > 0 ? text_lc.indexOf(' ') - 1 : text_lc.length - 1);
+			var parameters = text.split(' ');
+			// Removes command name from command, if there are no parameters it returns an empty array
+			parameters.splice(0, 1);
+			cmds.handleCommand(bot, commandName, parameters, sender, channel);
+		// If we're mentioned, run the hal9000 module to talk back
+		} else if (text_lc.search(settings.username) != -1) {
+			hal9000.botMention(bot, channel, sender, text_lc);
+		}
+	});
+}
+
+console.log("Connecting to the database...");
+db.connect('localhost', 'test', initializeBoqbot);

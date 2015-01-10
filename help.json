@@ -1,0 +1,37 @@
+{
+	"addsong": {
+		"description": "!addsong adds songs to the broadcaster's streaming playlist based on their Spotify URIs. To get a Spotify Track URI, right click on the song and click \"Copy Spotify URI\".",
+		"usage": "!addsong <song1> [song2] [songx] ...",
+		"example": "!addsong spotify:track:3ly28r6vOMMyb9nLc5T63e spotify:track:6u13tCUeMafkT0KFsmvodB"
+	},
+	"highlight": {
+		"description": "!highlight saves a timestamp and comment for the broadcaster to retrieve later with !recap for ease of creating highlights.",
+		"usage": "!highlight [comment]",
+		"example": "!highlight Boq_TV just screamed so loud he made his kids cry"
+	},
+	"recap": {
+		"description": "!recap allows the broadcaster to recap all highlights made during the current session.",
+		"usage": "!recap",
+		"example": "!recap"
+	},
+	"donation": {
+		"description": "Allows viewers to see how much they've donated and lets the broadcaster modify that value.",
+		"usage": "!donation [username] [amount]",
+		"example": "!donation jpon9 13.37"
+	},
+	"mytime": {
+		"description": "Sends the amount of time spent viewing according to the bot back to the viewer.",
+		"usage": "!mytime",
+		"example": "!mytime"
+	},
+	"mysessiontime": {
+		"description": "Sends the amount of time spent viewing in that particular session according to the bot back to the viewer.",
+		"usage": "!mysessiontime",
+		"example": "!mysessiontime"
+	},
+	"uptime": {
+		"description": "Displays the amount of time the broadcaster has been streaming that session.",
+		"usage": "!uptime",
+		"example": "!uptime"
+	}
+}
