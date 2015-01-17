@@ -4,19 +4,28 @@ function shuffleArray(o){ //v1.0
     return o;
 };
 
-function invitePeople(people, demonym, numOfInvites) {
+function invitePeople(sender, people, demonym, numOfInvites) {
 	numOfInvites = numOfInvites > people.length ? people.length : numOfInvites;
+	
+	if (numOfInvites === 0) {
+		chat.send(sender + ': No valid ' + demonym + 's could be invited.');
+		return;
+	}
+
 	people = shuffleArray(people);
 	people.slice(0, numOfInvites);
-	chat.send('The following ' + demonym + ' have been invited: ' + people.join(', '));
+
+	var plurality = people.length > 1 ? 's have' : ' has';
+
+	chat.send(sender + ': The following ' + demonym + plurality + ' been invited: ' + people.join(', '));
 }
 
 module.exports = {
-	moderators: function(numOfInvites) {
-		invitePeople(moderators.getMods(), 'moderators', numOfInvites);
+	moderators: function(sender, numOfInvites) {
+		invitePeople(sender, moderators.getMods(), 'moderator', numOfInvites);
 	},
 
-	viewers: function(numOfInvites) {
-		invitePeople(cv.getCurrentViewers(true), 'viewers', numOfInvites);
+	viewers: function(sender, numOfInvites) {
+		invitePeople(sender, cv.getAllChatters(true), 'viewer', numOfInvites);
 	}
 };

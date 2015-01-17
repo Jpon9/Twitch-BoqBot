@@ -3,7 +3,7 @@ var highlight = require('./modules/highlight');
 var invite = require('./modules/invite-viewers');
 
 function lowercase(arr) {
-	return arr.join('`-*|').toLowerCase().split('`-*|');
+	return arr.length === 0 ? [] : arr.join('`-*|').toLowerCase().split('`-*|');
 }
 
 function vetInput(re, params) {
@@ -35,7 +35,7 @@ function validateGroupToInvite(group) {
 
 function validateNumToInvite(num) {
 	var numToInvite = null;
-	if ((num >= 1 || num <= 10) && !isNaN(num)) {
+	if ((num >= 1 && num <= 10) && !isNaN(num)) {
 		numToInvite = parseInt(num);
 	}
 	return numToInvite;
@@ -65,6 +65,7 @@ module.exports = {
 			 *	Invites a certain number of people from a certain chat group to play with the broadcaster
 			 */
 			case 'invite':
+				break; // Disabled
 				parameters = lowercase(parameters);
 				var defaultNumToInvite = 4;
 				var defaultGroupToInvite = 'viewers';
@@ -75,7 +76,7 @@ module.exports = {
 					groupToInvite = validateGroupToInvite(parameters[0]);
 					numToInvite = validateNumToInvite(parameters[0]);
 					if (groupToInvite === null && numToInvite === null) {
-						chat.send(sender + ': Invalid usage of !invite');
+						chat.send(sender + ': Invalid usage of !invite 1');
 						break;
 					}
 					if (groupToInvite === null) { groupToInvite = defaultGroupToInvite; }
@@ -84,13 +85,14 @@ module.exports = {
 					groupToInvite = validateGroupToInvite(parameters[0]);
 					numToInvite = validateNumToInvite(parameters[1]);
 					if (groupToInvite === null || numToInvite === null) {
-						chat.send(sender + ': Invalid usage of !invite');
+						chat.send(sender + ': Invalid usage of !invite 2');
 						break;
 					}
 				}
+
 				switch (groupToInvite) {
-					case 'viewers': invite.viewers(numToInvite); break;
-					case 'moderators': invite.moderators(numToInvite); break;
+					case 'viewers': invite.viewers(sender, numToInvite); break;
+					case 'moderators': invite.moderators(sender, numToInvite); break;
 					default: chat.send(sender + ': Invalid group to invite'); break;
 				}
 				break;

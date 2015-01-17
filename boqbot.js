@@ -18,6 +18,7 @@ format = require('./modules/formatting');
 moderators = require('./modules/moderator');
 chat = require('./modules/chat');
 spotify = require('./modules/spotify');
+swearJar = require('./modules/swear-jar');
 
 // Called once the database connection is established
 function initializeBoqbot() {
@@ -79,6 +80,25 @@ function initializeBoqbot() {
 
 		// Convert the command text to lowercase so it's easier to work with
 		var text_lc = text.toLowerCase();
+
+		var hasSwear = swearJar.messageHasSwear(text_lc);
+
+		if (hasSwear !== 0) {
+			var secondsBanned = 0;
+
+			var timeUnit = hasSwear.substr(-1);
+			var baseTime = parseFloat(hasSwear.substr(0, hasSwear.length - 1));
+
+			if (baseTime !== 0) {
+				if (timeUnit === 'm') {
+					secondsBanned = baseTime * 60;
+				} else if (timeUnit === 'h') {
+					secondsBanned = baseTime * 3600;
+				}
+
+				chat.send(sender + ': Your last message would warrant a ' + format.seconds(secondsBanned) + ' ban from chat.');
+			}
+		}
 
 		// If a messages starts with !, it's a command
 		if (text.substr(0, 1) === '!') {
